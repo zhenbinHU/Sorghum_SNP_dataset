@@ -1,3 +1,7 @@
+# This function was used to convert hapmap format to the format LDheatmap package need
+# The input is a subsetted hapmap which is the region we interested
+# out is a names of the file we want to save as for our output
+
 hmp2LDheatmap<-function(hapmap,out=""){
     hapmap[12:dim(hapmap)[2]]<-apply(hapmap[12:dim(hapmap)[2]],2,as.character)
     snp_dis<-as.numeric(as.character(hapmap$pos))
