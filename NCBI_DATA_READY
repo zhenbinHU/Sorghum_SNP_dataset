@@ -1,0 +1,103 @@
+# The following code was used to download data from NCBI, and convert the data to format that TASSEL GBS pipeline need
+# Note, the working dir in the code was change to path or other
+
+list<-read.delim("bap_list_ncbi.txt",header=F) #the list of SRA id
+run<-subset(list,select="V2")
+run<-as.vector(t(run))
+for (i in run){
+	path<-"ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR273/"
+	path<-paste(path,i,"/",i,".sra",sep="")
+	path<-paste("wget",path)
+	system(path)
+	read<-paste(i,".sra",sep="")
+	sra2fastq<-paste("/path/to/bin/fastq-dump.2.3.5.2 -v -A",read)
+	system(sra2fastq)
+}
+
+# link the barcode back to sequences
+# and assume they have quality with "B"
+# fix the barcode back the the reads
+key<-read.table("/path/to/raw_data/key.txt",header=T)
+setwd("//path/to/BAP/raw_data")
+for (i in 1:nrow(key)){
+	seq<-as.character(key$Barcode[i])
+	fq<-as.character(key$file[i])
+	len<-length(strsplit(seq,"")[[1]])
+	qty<-paste(rep("B",len),collapse="")
+	arg1<-paste("sed '2~4s/^/",seq,"/' ",fq,".sra.fastq", " > ", fq,".sra.fastq.txt",sep="")
+	arg2<-paste("sed '4~4s/^/",qty,"/' ",fq,".sra.fastq.txt", " > ", fq,".sra.fastq_txt",sep="")
+	system(arg1)
+	system(arg2)
+	file.remove(paste(i,".sra.fastq.txt",sep=""))
+    print(paste(i," th file of 345 files was done!",sep=""))
+}
+
+# data for nature plant paper
+list<-read.delim("NATURE_PLANT.txt",header=F)
+run<-subset(list,select="V2")
+run<-as.vector(t(run))
+for (i in run){
+	path<-"ftp://ftp.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByStudy/sra/SRP/SRP073/SRP073502/"
+	path<-paste(path,i,"/",i,".sra",sep="")
+	path<-paste("wget",path)
+	system(path)
+	read<-paste(i,".sra",sep="")
+	sra2fastq<-paste("/path/to/fastq-dump.2.3.5.2 -v -A",read)
+	system(sra2fastq)
+}
+
+key<-read.table("/path/to/key.txt",header=T)
+list<-read.table("NATURE_PLANT.txt",header=F) # the list of SRA id
+
+Flowcell<-c(rep("JMYNCBI01",322),rep("JMYNCBI02",322),rep("JMYNCBI03",318))
+Lane<-c(rep(1,322),rep(2,322),rep(3,318))
+Barcode<-c(as.character(key$Barcode[1:322]),as.character(key$Barcode[1:322]),as.character(key$Barcode[1:318]))
+Sample<-gsub("_","",list$V2)
+PlateName<-c(rep("JMY_1",322),rep("JMY_2",322),rep("JMY_3",318))
+row<-c(LETTERS[1:8])
+row<-rep(rep(row,each=12),times=4)
+Row<-c(row[1:322],row[1:322],row[1:318])
+column<-rep(rep(1:12,time=8),times=4)
+Column<-c(column[1:322],column[1:322],column[1:318])
+LibraryPrepID<-seq(17229,length=962)
+FullSampleName<-paste0(Sample,":",Flowcell,":",Lane,":",LibraryPrepID)
+
+
+# fix the barcode back the the reads
+key_list<-data.frame(Flowcell,Lane,Barcode,Sample,PlateName,Row,Column,LibraryPrepID,FullSampleName)
+key_new<-rbind(key,key_list)
+write.table(key_new,"/path/to/key_new.txt",quote=F,row.names=F,sep="\t")
+setwd("/path/to/working_dir")
+for (i in 1:nrow(key_list)){
+	seq<-as.character(key_list$Barcode[i])
+	fq<-as.character(key_list$file[i])
+	len<-length(strsplit(seq,"")[[1]])
+	qty<-paste(rep("B",len),collapse="")
+	arg1<-paste("sed '2~4s/^/",seq,"/' ",fq,".sra.fastq", " > ", fq,".sra.fastq.txt",sep="")
+	arg2<-paste("sed '4~4s/^/",qty,"/' ",fq,".sra.fastq.txt", " > ", fq,".sra.fastq_txt",sep="")
+	system(arg1)
+	system(arg2)
+	file.remove(paste(i,".sra.fastq.txt",sep=""))
+	print(paste(i," of 962 files were done!",sep=""))
+}
+
+# remove 
+system("rm *sra.fastq.txt")
+
+# copy to lane folder and compress
+for (i in 2:3){
+	setwd("//path/to/working_dir/")
+	file<-as.character(key_list$file[key_list$Lane==i])
+	file<-paste(file,".sra.fastq_txt",sep="")
+	for (j in file){
+		cp<-paste("cp ",j, " lane",i,sep="")
+		system(cp)
+	}
+	dir<-paste("/path/to/lane",i,sep="")
+	setwd(dir)
+	arg1<-paste("cat *.sra.fastq_txt  > JMYNCBI0",i,"_",i,"_fastq.txt",sep="") 
+	system(arg1)
+	arg2<-paste("rm ", dir,"/*.sra.fastq_txt",sep="")
+	system(arg2)
+	print(paste(i,"th lane was done!", sep=""))
+}
