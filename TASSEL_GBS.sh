@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=sra2fq
-#SBATCH --output=sra2fq.txt
+#SBATCH --job-name=snpcalling
+#SBATCH --output=snpcalling.txt
 #SBATCH --time=10-10:10:00
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=4
