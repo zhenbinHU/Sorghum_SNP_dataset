@@ -1,4 +1,14 @@
 #!/bin/bash
+#SBATCH --job-name=sra2fq
+#SBATCH --output=sra2fq.txt
+#SBATCH --time=10-10:10:00
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=killable.q
+#SBATCH --mem-per-cpu=20GB
+#SBATCH --mail-user=zhenbin@ksu.edu
+module load Java
+# the real dir was replaced using path
 tassel="/path/to/run_pipeline.pl"
 reference="/path/to/final.Sbicolor_313_v3.1.fa"
 key="/path/to/keyfile"
