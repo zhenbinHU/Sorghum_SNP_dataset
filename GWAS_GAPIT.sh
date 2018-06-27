@@ -1,4 +1,4 @@
-
+# GWAS code with GAPIT using FT as example
 library(multtest)
 library(gplots)
 library(LDheatmap)
@@ -22,3 +22,14 @@ id<-as.character(unlist(hmp[1,]))
 FT<-FT[which(FT$Taxa%in%id),]
 myGAPIT <- GAPIT(Y=FT,G=hmp,PCA.total=5,SNP.MAF=0.05) 
 
+!#/bin/bash
+#SBATCH --job-name=gwas
+#SBATCH --output=gwas.txt
+#SBATCH --time=10-10:10:00
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=killable.q
+#SBATCH --mem-per-cpu=20GB
+#SBATCH --mail-user=zhenbin@ksu.edu
+module load R
+R CMD BATCH gwas.sh
