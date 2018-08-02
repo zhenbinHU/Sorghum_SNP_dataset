@@ -17,7 +17,6 @@ is=1.5)
  }
 
 # code for Figure 1
-
 gff<-read.table("/path/Sbicolor_313_v3.1.gene.gff3",skip=1)
 gff<-gff[grep("Chr",gff$V1),]
 features<-unique(gff$V3)
@@ -126,7 +125,6 @@ axis(side=2,at=seq(0,600,length=7),labels=seq(0,600,length=7),cex.lab=1.5,cex.ax
 axis(side=1,at=c(chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10),labels=c("1","2","3","4","5","6","7","8","9","10"),cex.axis=2)
 dev.off()
 
-
 # Figure S4, the correlation between SNP density and enzyme cut site number
 cor(cor_snp_sim$number,cor_snp_sim$SNP_COUNT)
 #[1] 0.8165231
@@ -157,10 +155,8 @@ p<-p+geom_smooth(method = "lm",color="red")
 
 p<-p+annotate("text", label = "r:0.82 \n p-value < 2.2e-16", x = 100, y = 600, size = 5)
 p<-p+theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"))+ylim(0,620)
-
 p
 dev.off()
-
 
 # LD decay Figure 2
 # The LD was analyzed using PopLDdecay (https://github.com/BGI-shenzhen/PopLDdecay)
@@ -186,7 +182,7 @@ lines(smoothingSpline,col=col[i],lwd=ifelse(i==1,2,1),lty=2)
 }
 
 for(i in c(2:11,1)){
-ld<-read.table(paste0("/bulk/zhenbin/Sorghum_diversity/LD/",div.file[i]),header=F)
+ld<-read.table(paste0("/path/",div.file[i]),header=F)
 smoothingSpline = smooth.spline(ld$V1,ld$V2, spar=0.05)
 lines(smoothingSpline,col=col[i],lwd=ifelse(i==1,2,1))
 }
@@ -201,9 +197,8 @@ dev.off()
 # Color from blue to red mean R^2 from 0 to 1
 
 library(LDheatmap)
-setwd("~/Desktop/heatmap")
-load("/Users/zhenbin/Desktop/heatmap/snp_dis_y1.1.rda")
-load("/Users/zhenbin/Desktop/heatmap/snp_data_y1.rda")
+load("snp_dis_y1.1.rda")
+load("snp_data_y1.rda")
 png("heatmap_Y1.png",width=6,height=6,res=600,units="in")
 rgb.palette <- colorRampPalette(rev(c("blue", "orange", "red")), space = "rgb")
 MyHeatmap<-LDheatmap(snp_data,snp_dis,flip=TRUE,color=rgb.palette(20),title="",name = "myLDgrob",SNP.name="S2_57610965")
