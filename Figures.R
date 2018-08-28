@@ -209,3 +209,19 @@ grid.newpage()
 grid.draw(LD.grob3)
 dev.off()
 
+# reginal association plot for y1 gene on chromosome 1 
+kc_gwas<-read.csv("GAPIT..KERCOLOR.GWAS.Results.csv",header=T)
+kc_gwas<-kc_gwas[kc_gwas$maf>0.05,1:5]
+gene<-read.table("Sbicolor_313_v3.1.gene.gff3",sep="\t",skip=1)
+kc_gwas_chr1<-kc_gwas[kc_gwas$CHR==1 & kc_gwas$BP>68366732-50000 & kc_gwas$BP<68366732+50000,]
+plot(kc_gwas_chr1$BP,-log10(kc_gwas_chr1$P)+4,pch=16,col=ifelse(-log10(kc_gwas_chr1$P)==max(-log10(kc_gwas_chr1$P)),"red","black"),ylim=c(0,max(-log10(kc_gwas_chr1$P)+5)),axes=F,xlab="",ylab=expression(-log[10](italic(p))),cex.lab=2)
+axis(side=2,at=c(2,4,6,8,10,12,14)+2,labels=c(0,2,4,6,8,10,12),cex.axis=1.5,tck=-0.03,las=2)
+axis(side=1,at=round(seq(68366732-50000,68366732+50000,length=4)),labels=round(seq(68366732-50000,68366732+50000,length=4)),pos=2,cex.axis=1,tck = -0.03,mgp=c(3, 0.3, .1))#,mgp=c(3, 0.3, .05)
+abline(h=4)
+abline(v=68366732,col="red")
+gene_chr1<-gene[gene$V1=="Chr01",]
+gene_chr1<-gene_chr1[gene_chr1$V4> 68366732-50000 & gene_chr1$V5 <68366732+50000,]
+gene_chr1<-gene_chr1[grep("gene",gene_chr1$V3),]
+for(i in 1:dim(gene_chr1)[1]){
+    segments(gene_chr1$V4[i],ifelse(i%%2==0,3.3,2.5),gene_chr1$V5[i],ifelse(i%%2==0,3.3,2.5),lwd=7,lend=2,col=ifelse(i!=3,"deepskyblue1","darkviolet"))
+}
