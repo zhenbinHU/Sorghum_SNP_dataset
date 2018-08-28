@@ -192,8 +192,8 @@ legend(300000,0.6,legend=c("RILS","Landraces"),lty=c(2,1),bty="n",lwd=3,cex=1.5)
 dev.off()
 
 
-# LD heatmmap plot using LDheatmap R package 
-# Using Y1 gene as example
+# LD heatmap plot using LDheatmap R package 
+# Using Y1 gene as an example
 # Color from blue to red mean R^2 from 0 to 1
 
 library(LDheatmap)
