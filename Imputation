@@ -1,1 +1,18 @@
+# SNP dataset was splited to ten subset by chromosome
+# ten imputation shell were submitted for ten chromosome separately
 
+
+# using chromosome 1 as example
+
+#!/bin/bash
+#$ -l mem=15g
+#$ -l h_rt=330:00:00
+#$ -P KSU-GEN-HIGHMEM
+#$ -pe single 8
+#$ -M zhenbin@ksu.edu
+cd /bulk/zhenbin/Sorghum_diversity/imputation
+java -Xmx200g -jar /homes/zhenbin/packages/beagle.27Jul16.86a.jar gt=SG_SNPs_chr1.recode.vcf out=SG_imped_chr1 nthreads=8
+
+
+# submitted
+qsub -l mem=20g -l h_rt=330:00:00 -P KSU-GEN-HIGHMEM -pe single 8 imp1
