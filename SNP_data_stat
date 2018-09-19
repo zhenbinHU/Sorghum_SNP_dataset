@@ -1,1 +1,16 @@
 
+#Individual missing
+#before merge
+agr_2alleles<-"/homes/zhenbin/vcftools/bin/vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out /bulk/zhenbin/Sorghum_diversity/missing/myGenos_bef_merge"
+system(agr_2alleles)
+
+arg_indv_missing<-"/homes/zhenbin/vcftools/bin/vcftools --vcf  /bulk/zhenbin/Sorghum_diversity/Merge//GBSclear.non2.recode.vcf --missing-indv --out /bulk/zhenbin/Sorghum_diversity/missing/Bef_merged_missing"
+system(arg_indv_missing)
+
+#after merge 
+arg_indv_missing<-"/homes/zhenbin/vcftools/bin/vcftools --vcf  /bulk/zhenbin/Sorghum_diversity/Merge/merged_hmp.vcf --missing-indv --out /bulk/zhenbin/Sorghum_diversity/missing/merged_missing"
+system(arg_indv_missing)
+
+#Site missing
+site_missing<-"/homes/zhenbin/vcftools/bin/vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/merged_hmp.vcf  --missing-site --out /bulk/zhenbin/Sorghum_diversity/missing/myGenos_site_missing"
+system(site_missing)
