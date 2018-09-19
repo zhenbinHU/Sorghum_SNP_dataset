@@ -81,3 +81,24 @@ write.table(hmp,"/bulk/zhenbin/Sorghum_diversity/filtering/SB.hmp.txt",quote=F,r
 setwd("/bulk/zhenbin/Sorghum_diversity/filtering/")
 hmp2vcf<-paste0("/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1 -h SB.hmp.txt  -export -exportType VCF -runfork1")
 system(hmp2vcf)
+
+
+#Filter the missing individual by missing larger than 95%
+agr_2alleles<-paste0("/homes/zhenbin/vcftools/bin/vcftools --vcf /bulk/zhenbin/Sorghum_diversity/filtering/SB.vcf --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out /bulk/zhenbin/Sorghum_diversity/filtering/SB_bi.vcf")
+system(agr_2alleles)
+
+# hereafter, all data analysis was based on the filtered data
+arg_indv_missing<-"/homes/zhenbin/vcftools/bin/vcftools --vcf  /bulk/zhenbin/Sorghum_diversity/filtering/SB_bi.vcf.recode.vcf --missing-indv --out /bulk/zhenbin/Sorghum_diversity/filtering/merged_missing"
+
+system(arg_indv_missing)
+
+# 122 individuals was deleted with missing greater than 0.95
+idvd<-read.table("/bulk/zhenbin/Sorghum_diversity/filtering/merged_missing.imiss",header=T)
+idvd_DEL<-idvd[idvd$F_MISS>0.95,1]
+idvd_DEL<-data.frame(idvd_DEL)
+
+write.table(idvd_DEL,"/bulk/zhenbin/Sorghum_diversity/filtering/list_del",quote=F,row.names=F,col.names=F)
+
+filtering<-"/homes/zhenbin/vcftools/bin/vcftools --vcf /bulk/zhenbin/Sorghum_diversity/filtering/SB_bi.vcf.recode.vcf --remove /bulk/zhenbin/Sorghum_diversity/filtering/list_del --recode --recode-INFO-all --out /bulk/zhenbin/Sorghum_diversity/filtering/myGenos"
+
+system(filtering)
