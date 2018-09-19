@@ -1,0 +1,83 @@
+
+renames the individual 
+# some lines with replicates but with differenti name
+# the following code was used to rename 
+setwd("/bulk/zhenbin/Sorghum_diversity")
+hmp<-read.delim("GBSclear.hmp.txt",header=T)
+key<-read.delim("/bulk/zhenbin/Sorghum_GBS/clear_key.txt",header=T)
+cell<-unique(key$Flowcell)
+nam<-names(hmp)
+for(i in cell){
+	nam<-gsub(paste0(i,".+"),"",nam)
+}
+
+nam<-gsub("[.]$","",nam)
+nam<-gsub("pi","PI",nam)
+nam<-gsub("Macia","macia",nam)
+nam<-gsub("blank","Blank",nam)
+nam<-gsub("BLANK","Blank",nam)
+nam<-gsub("EMPTY","Blank",nam)
+
+# IS to PI: the information from Geoff's PNAS and Science advances paper
+pi<-read.table("IS2PI.txt",header=T)
+which_IS<-which(pi$AccessionID%in%nam)
+for(i in which_IS){
+	pos<-grep(pi[i,1],nam)	
+	nam[pos]<-as.character(pi[i,2])
+}
+
+CELL<-c(rep("C57CTACXX",384*8*4+526))
+LANE<-c(rep(1:8,each=384*4),rep(9,each=526))
+order<-1:12814
+NAM<-paste0(nam[12:12825],":",CELL,":",LANE,":",order)
+names(hmp)[12:12825]<-NAM
+names(hmp)[1:6]<-c("rs#","alleles","chrom","pos","strand","assembly#")
+write.table(hmp,"/bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.hmp.txt",quote=F,row.names=F,sep="\t") 
+
+setwd("/bulk/zhenbin/Sorghum_diversity/Merge/")
+
+merge individuals with duplicated in different Lanes
+# remove non-biallelic SNPs
+hmp2vcf<-"/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1 -h GBSclear.hmp.txt -export -exportType VCF -runfork1"
+system(hmp2vcf)
+
+# data format convert
+agr_2alleles<-"/homes/zhenbin/vcftools/bin/vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.non2"
+system(agr_2alleles)
+
+vcf2hmp<-"/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1 -VCF GBSclear.non2.recode.vcf -export -exportType Hapmap -runfork1"
+system(vcf2hmp)
+
+
+# merge duplicated samples
+setwd("/bulk/zhenbin/Sorghum_diversity/Merge")
+hmp2vcf<-paste0("/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1 -h GBSclear.hmp.txt -export -exportType VCF -runfork1")
+
+system(hmp2vcf)
+
+for (i in 1:10){
+	split<-paste0("/homes/zhenbin/vcftools/bin/vcftools --vcf GBSclear.vcf --chr ",i," --recode --recode-INFO-all --out chr",i)
+	system(split)
+}
+
+for(i in 8:10){
+	hmp2vcf<-paste0("/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1 -vcf chr",i,".recode.vcf -export -exportType Hapmap -runfork1")
+	system(hmp2vcf)
+}
+
+
+merge<-"/homes/zhenbin/tassel3/run_pipeline.pl -Xms150g -Xmx200G -fork1 -MergeIdenticalTaxaPlugin -hmp chr+.hmp.txt -o IMP_chr+.hmp.txt -hetFreq 0.75 -sC 1 -eC 10 -endPlugin -runfork1"
+system(merge)
+
+hmp<-NULL
+for (i in 1:10){
+chr<-read.delim(paste0("IMP_chr",i,".hmp.txt"),header=T)
+hmp<-rbind(hmp,chr)
+print(i)
+}
+names(hmp)[1:6]<-c("rs#","alleles","chrom","pos","strand","assembly#")
+write.table(hmp,"/bulk/zhenbin/Sorghum_diversity/filtering/SB.hmp.txt",quote=F,row.names=F,sep="\t")
+
+setwd("/bulk/zhenbin/Sorghum_diversity/filtering/")
+hmp2vcf<-paste0("/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1 -h SB.hmp.txt  -export -exportType VCF -runfork1")
+system(hmp2vcf)
