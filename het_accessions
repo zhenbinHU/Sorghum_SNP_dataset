@@ -17,7 +17,8 @@ missing_merged$type<-2
 missing<-rbind(missing_bef,missing_merged)
 
 # extracted individual merging from raw data
-awk 'NR==11 {print; exit}' /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf > bef_nam
+# under R
+system("awk 'NR==11 {print; exit}' /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf > bef_nam")
 id_list<-scan("bef_nam","\n")
 sample<-gsub("C57CTACXX.+","",id_list)
 sample<-gsub("[:]$","",sample)
@@ -27,12 +28,25 @@ ID_list<-id_list[which(row.names(id_list)%in%missing_bef$INDV),1]
 ID_list<-data.frame(ID_list)
 write.table(ID_list,"individual_bef",quote=F,row.names=F,col.names=F)
 
+system("awk 'NR==11 {print; exit}' /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf > merged_nam")
+
+id_list<-scan("merged_nam","\n")
+ORDER<-grep("MERGE",id_list$id_list)
+ID_list<-id_list[ORDER,]
+write.table(ID_list,"individual_merged",quote=F,row.names=F,col.names=F)
+
+# under linux
 tassel="/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1"
 vcftools="/homes/zhenbin/vcftools/bin/vcftools"
 $vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.non2
 $vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.non2.recode.vcf --keep individual_bef --recode --recode-INFO-all --out individual_bef
 $tassel -VCF /bulk/zhenbin/Sorghum_diversity/Merge/individual_bef.recode.vcf -export -exportType Hapmap -runfork1
 
+$vcftools --vcf /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf --keep individual_merged --recode --recode-INFO-all --out individual_merged
+$tassel -VCF /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf -export -exportType Hapmap -runfork1
+
+# calculate the het for each individual
+# for genotypes before merged
 library(vcfR)
 SNP<-read.vcfR("individual_bef.recode.vcf")
 gt<-SNP@gt
@@ -46,18 +60,9 @@ for (i in 2:dim(gt)[2]){
 mean(na.omit(het))
 #0.01712936
 
-# extracted individual merging from raw data
-awk 'NR==11 {print; exit}' /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf > merged_nam
+# # calculate the het for each individual
+# for genotypes after merged
 
-id_list<-scan("merged_nam","\n")
-ORDER<-grep("MERGE",id_list$id_list)
-ID_list<-id_list[ORDER,]
-write.table(ID_list,"individual_merged",quote=F,row.names=F,col.names=F)
-
-$vcftools --vcf /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf --keep individual_merged --recode --recode-INFO-all --out individual_merged
-$tassel -VCF /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf -export -exportType Hapmap -runfork1
-
-# het for merged SNP data
 library(vcfR)
 SNP_m<-read.vcfR("individual_merged.recode.vcf")
 gt_m<-SNP_m@gt
