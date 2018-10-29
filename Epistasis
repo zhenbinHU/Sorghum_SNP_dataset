@@ -1,0 +1,48 @@
+# Interaction analysis of known gene/loci
+# For plant height in Sorghum NAM population
+
+SB_nam.hmp<-read.delim("/bulk/zhenbin/Sorghum_diversity/GWAS/NAM/SB_nam.hmp.txt",header=T)
+SB_pht<-SB_nam.hmp[SB_nam.hmp$rs.%in%c("S9_57060473","S6_42788998","S7_59751994","S7_56472060"),]
+PHT_BLUP<-read.table("/bulk/zhenbin/Sorghum_diversity/GWAS/NAM/PHT.blup.txt",header=T)
+
+SB_pht<-t(SB_pht)
+SB_pht<-as.data.frame(SB_pht)
+SB_pht$id<-row.names(SB_pht)
+
+SB_pht_blup<-merge(PHT_BLUP,SB_pht,by.x="Taxa",by.y="id")
+names(SB_pht_blup)[3:6]<-c("Dw2","qPHT7.1","Dw3","Dw1")
+SB_pht_blup<-merge(SB_pht_blup,f,by.x="Taxa",by.y="PR1314")
+
+# family is the ten families in NAM population
+# the PHT.blup is the blup value of plant height used for GWAS
+# Dw2,qPHT7.1,Dw3 and Dw1 were the four major genes associated with plant height, 
+# the four genes/loci were represented by the leading associated SNPs
+
+model<-lm(PHT.blup~family+Dw2*qPHT7.1*Dw3*Dw1,data=SB_pht_blup)
+
+summary(model)
+anova(model)
+
+# For flowering time in Sorghum NAM population
+
+SB_ft<-SB_nam.hmp[SB_nam.hmp$rs.%in%c("S3_62733929","S6_37645627","S6_1501789","S9_58880878"),]
+FT_BLUP<-read.table("/bulk/zhenbin/Sorghum_diversity/GWAS/NAM/FT.blup.txt",header=T)
+
+SB_ft<-t(SB_ft)
+SB_ft<-as.data.frame(SB_ft)
+SB_ft$id<-row.names(SB_ft)
+
+SB_FT_blup<-merge(FT_BLUP,SB_ft,by.x="Taxa",by.y="id")
+names(SB_FT_blup)[3:6]<-c("SbCN12","ma1","ma6","SbFL9.1")
+
+SB_FT_blup<-merge(SB_FT_blup,f,by.x="Taxa",by.y="PR1314")
+
+# the PHT.blup is the blup value of flowering time used for GWAS
+# family is the ten families in NAM population
+# SbCN12,ma1,ma6 and SbFL9.1 were the four major genes associated with flowering time, 
+# the four genes/loci were represented by the leading associated SNPs
+
+model<-lm(FT.blup~family+SbCN12*ma1*ma6*SbFL9.1,data=SB_FT_blup)
+summary(model)
+anova(model)
+
