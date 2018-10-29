@@ -1,0 +1,72 @@
+# Check the heterozygosity of the duplicated sample: before merged and after merged
+# This results can help understand whether the duplicated sample were real or not
+
+individual_bef<-read.delim("/bulk/zhenbin/Sorghum_diversity/missing/Bef_merged_missing.imiss",header=T)
+individual_merged<-read.delim("/bulk/zhenbin/Sorghum_diversity/missing/merged_missing.imiss",header=T)
+sample<-individual_bef$INDV
+sample<-gsub("C57CTACXX.+","",sample)
+sample<-gsub("[:]$","",sample)
+individual_bef$INDV<-sample
+sample<-as.data.frame(table(sample))
+sample<-sample[sample$Freq!=1,]
+missing_bef<-individual_bef[individual_bef$INDV%in%sample$sample,]
+missing_merged<-individual_merged[individual_merged$INDV%in%sample$sample,]
+missing_bef<-missing_bef[-c(grep("Blank",missing_bef$INDV)),]
+missing_bef$type<-1
+missing_merged$type<-2
+missing<-rbind(missing_bef,missing_merged)
+
+# extracted individual merging from raw data
+awk 'NR==11 {print; exit}' /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf > bef_nam
+id_list<-scan("bef_nam","\n")
+sample<-gsub("C57CTACXX.+","",id_list)
+sample<-gsub("[:]$","",sample)
+id_list<-as.data.frame(id_list,sample)
+
+ID_list<-id_list[which(row.names(id_list)%in%missing_bef$INDV),1]
+ID_list<-data.frame(ID_list)
+write.table(ID_list,"individual_bef",quote=F,row.names=F,col.names=F)
+
+tassel="/homes/zhenbin/tassel-5-standalone/run_pipeline.pl -Xms150g -Xmx200G -fork1"
+vcftools="/homes/zhenbin/vcftools/bin/vcftools"
+$vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.vcf --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --out /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.non2
+$vcftools --vcf /bulk/zhenbin/Sorghum_diversity/Merge/GBSclear.non2.recode.vcf --keep individual_bef --recode --recode-INFO-all --out individual_bef
+$tassel -VCF /bulk/zhenbin/Sorghum_diversity/Merge/individual_bef.recode.vcf -export -exportType Hapmap -runfork1
+
+library(vcfR)
+SNP<-read.vcfR("individual_bef.recode.vcf")
+gt<-SNP@gt
+het<-rep(NA,length=dim(gt)[2])
+for (i in 2:dim(gt)[2]){
+    tmp<-table(gt[,i])
+    het[i-1]<-sum(tmp[2:3])/sum(tmp)
+    if(i%%100==0){cat(i," was done!\n")}
+}
+
+mean(na.omit(het))
+#0.01712936
+
+# extracted individual merging from raw data
+awk 'NR==11 {print; exit}' /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf > merged_nam
+
+id_list<-scan("merged_nam","\n")
+ORDER<-grep("MERGE",id_list$id_list)
+ID_list<-id_list[ORDER,]
+write.table(ID_list,"individual_merged",quote=F,row.names=F,col.names=F)
+
+$vcftools --vcf /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf --keep individual_merged --recode --recode-INFO-all --out individual_merged
+$tassel -VCF /bulk/zhenbin/Sorghum_diversity/submit/SNPs.recode.vcf -export -exportType Hapmap -runfork1
+
+# het for merged SNP data
+library(vcfR)
+SNP_m<-read.vcfR("individual_merged.recode.vcf")
+gt_m<-SNP_m@gt
+het<-rep(NA,length=dim(gt_m)[2])
+for (i in 2:dim(gt_m)[2]){
+    tmp<-table(gt_m[,i])
+    het[i-1]<-sum(tmp[2:3])/sum(tmp)
+    cat(ifelse(i%%100==0,i,))
+}
+
+mean(na.omit(het))
+#0.03020303
