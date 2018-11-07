@@ -17,6 +17,14 @@ SB_pht_blup<-merge(SB_pht_blup,f,by.x="Taxa",by.y="PR1314")
 # the PHT.blup is the blup value of plant height used for GWAS
 # Dw2,qPHT7.1,Dw3 and Dw1 were the four major genes associated with plant height, 
 # the four genes/loci were represented by the leading associated SNPs
+# remove the individual with missing data and heterozygous SNPs
+SB_pht_blup<-na.omit(SB_pht_blup)
+model<-lm(PHT.blup~family+Dw2*qPHT7.1*Dw3*Dw1,data=SB_pht_blup)
+SB_pht_blup<-SB_pht_blup[SB_pht_blup$Dw2%in%c("G","C","T","A"),]
+SB_pht_blup<-SB_pht_blup[SB_pht_blup$Dw1%in%c("G","C","T","A"),]
+SB_pht_blup<-SB_pht_blup[SB_pht_blup$Dw3%in%c("G","C","T","A"),]
+SB_pht_blup<-SB_pht_blup[SB_pht_blup$qPHT7.1%in%c("G","C","T","A"),]
+
 
 model<-lm(PHT.blup~family+Dw2*qPHT7.1*Dw3*Dw1,data=SB_pht_blup)
 
@@ -41,6 +49,12 @@ SB_FT_blup<-merge(SB_FT_blup,f,by.x="Taxa",by.y="PR1314")
 # family is the ten families in NAM population
 # SbCN12,ma1,ma6 and SbFL9.1 were the four major genes associated with flowering time, 
 # the four genes/loci were represented by the leading associated SNPs
+# remove the individual with missing data and heterozgous SNPs
+SB_FT_blup<-na.omit(SB_FT_blup)
+SB_FT_blup<-SB_FT_blup[SB_FT_blup$ma1%in%c("G","C","T","A"),]
+SB_FT_blup<-SB_FT_blup[SB_FT_blup$ma6%in%c("G","C","T","A"),]
+SB_FT_blup<-SB_FT_blup[SB_FT_blup$SbCN12%in%c("G","C","T","A"),]
+SB_FT_blup<-SB_FT_blup[SB_FT_blup$SbFL9.1%in%c("G","C","T","A"),]
 
 model<-lm(FT.blup~family+SbCN12*ma1*ma6*SbFL9.1,data=SB_FT_blup)
 summary(model)
