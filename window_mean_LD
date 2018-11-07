@@ -1,0 +1,26 @@
+setwd("/bulk/zhenbin/Sorghum_diversity/GWAS/NAM/")
+library(genetics)
+
+# subset of hapmap data for specific region
+hmp_sub<-SB_nam.hmp
+
+hmp_sub[12:dim(hmp_sub)[2]]<-apply(hmp_sub[12:dim(hmp_sub)[2]],2,as.character)
+hmp_sub[hmp_sub=="A"]<-"A/A"
+hmp_sub[hmp_sub=="T"]<-"T/T"
+hmp_sub[hmp_sub=="C"]<-"C/C"
+hmp_sub[hmp_sub=="G"]<-"G/G"
+hmp_sub[hmp_sub=="M"]<-"A/C"
+hmp_sub[hmp_sub=="R"]<-"A/G"
+hmp_sub[hmp_sub=="W"]<-"A/T"
+hmp_sub[hmp_sub=="S"]<-"C/G"
+hmp_sub[hmp_sub=="Y"]<-"C/T"
+hmp_sub[hmp_sub=="K"]<-"G/T"
+r2<-NULL
+hmp_sub<-t(hmp_sub[,-c(2:11)])
+hmp_sub<-data.frame(hmp_sub)
+names(hmp_sub)<-as.character(unlist(hmp_sub[1,]))
+hmp_sub<-hmp_sub[-1,]
+
+data <- makeGenotypes(hmp_sub)
+r2<-LD(data)$R^2
+mean_LD<-mean(na.omit(c(r2)))
