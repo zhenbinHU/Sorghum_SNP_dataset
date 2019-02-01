@@ -1,5 +1,6 @@
 # manhattan plot was draw using qqman packages
 setwd("")
+library(qqman)
 list<-list.files()
 for(i in list){
    setwd(paste0(i))
