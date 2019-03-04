@@ -226,3 +226,4 @@ gene_chr1<-gene_chr1[grep("gene",gene_chr1$V3),]
 for(i in 1:dim(gene_chr1)[1]){
     segments(gene_chr1$V4[i],ifelse(i%%2==0,3.3,2.5),gene_chr1$V5[i],ifelse(i%%2==0,3.3,2.5),lwd=7,lend=2,col=ifelse(i!=3,"deepskyblue1","darkviolet"))
 }
+dev.off()
