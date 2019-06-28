@@ -1,5 +1,5 @@
 # This function was used to convert hapmap format to the format LDheatmap package need
-# The input is a subsetted hapmap which is the region we interested
+# The input is a subsetted hapmap by the region we interested, such as around 50 kb of y1 gene
 # out is a names of the file we want to save as for our output
 
 hmp2LDheatmap<-function(hapmap,out=""){
