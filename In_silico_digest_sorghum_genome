@@ -55,7 +55,7 @@ segment_length<-NULL
 setwd("/bulk/zhenbin/Sorghum_diversity/Simulation_digest")
 for(i in 1:10){
 	rfsa<-ref.DNAseq(paste("chr",i,".fasta",sep=""),subselect.contigs = TRUE)
-	simseq.dig1 <- insilico.digest(rfsa, cs_5p1, cs_3p1, cs_5p1, cs_3p1, verbose=TRUE)
+	simseq.dig1 <- insilico.digest(rfsa, cs_5p1, cs_3p1, cs_5p2, cs_3p2, verbose=TRUE)
 	number_of_segment_tmp<-length(simseq.dig1)
 	segment_length_tmp<-width(simseq.dig1)
 	number_of_segment<-c(number_of_segment,number_of_segment_tmp)
