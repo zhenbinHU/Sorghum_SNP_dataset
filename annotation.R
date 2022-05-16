@@ -1,4 +1,5 @@
-# This code was used to analyze the SNP distribution on genome using GFF3
+# This code was used to analyze the SNP distribution on genome based on genome annotation file GFF3
+
 snp<-read.delim("/path/to/GBSclear.hmp.txt",header=T)
 gff<-read.table("/path/to/Sbicolor_313_v3.1.gene.gff3",skip=2)
 snp_inform<-snp[,1:11]
